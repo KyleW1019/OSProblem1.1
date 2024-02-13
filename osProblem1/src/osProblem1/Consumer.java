@@ -1,30 +1,33 @@
 package osProblem1;
 
 public class Consumer implements Runnable{
-	private final int[] buffer;
-	private int count;
+	private String[] bufferArray;
+	private int arrayIndex;
+	private boolean isRunning = true;
 	
-	public Consumer(int[] buffer) {
-		this.buffer = buffer;
-		this.count = buffer.length - 1;
+	public Consumer(String[] bufferArray) {
+		this.bufferArray = bufferArray;
+		this.arrayIndex = bufferArray.length - 1;
 	}
 	
 	public void run() {
-		while(true) {
-			synchronized (buffer){
+		while(isRunning) {
+			synchronized (bufferArray){										//ensures that the threads are synchronized, will throw errors if not
 				try {
-					while(count < 0) {
+					while(arrayIndex < 0) {									//checks if the buffer is empty (count = -1)
 					System.out.println("Buffer is empty");
-					count = 0;
-					buffer.wait();
+					arrayIndex = 0;											//resets the count back to 0
+					bufferArray.wait();										//waits until the producer produces
 					}
-					buffer[count--] = 0;
-					System.out.println("Consumed");
-					if(count == buffer.length - 1) {
-					buffer.notify();
+					bufferArray[arrayIndex] = "EMPTY";
+					System.out.println("Consumed at index " + arrayIndex + " and set it to empty");
+					arrayIndex = arrayIndex - 1;
+					if(arrayIndex == bufferArray.length - 1) {				//notifies that the buffer is empty
+					bufferArray.notify();
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
+					isRunning = false;
 				}
 			}		
 		}

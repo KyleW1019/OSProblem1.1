@@ -1,29 +1,32 @@
 package osProblem1;
 
-public class Producer implements Runnable{
-	private int[] buffer;
-	private int bufferSize = 5;
+public class Producer implements Runnable{					
+	private String[] bufferArray;
+	private int bufferSize;
 	private int count;
-	public Producer(int[] buffer) {
-		this.buffer = buffer;
+	private boolean isRunning = true;
+	public Producer(String[] bufferArray, int bufferSize) {
+		this.bufferArray = bufferArray;
+		this.bufferSize = bufferSize;
 		this.count = 0;
 	}
 	public void run() {
-		while(true) {
-			synchronized (buffer) {
+		while(isRunning) {
+			synchronized (bufferArray) {											//synchronized ensures that the threads are synchronized and avoids errors at runtime
 				try {
-					while(count == bufferSize) {
+					while(count == bufferSize) {									//check if the buffer is full
 						System.out.println("BUFFER IS FULL");
-						buffer.wait();
+						bufferArray.wait();											//waits until the buffer is empty
 					}
-					buffer[count++] = 1;
-					System.out.println("Producer produced");
-					buffer.notify();
-				}catch(Exception e) {
+					bufferArray[count] = "FULL";
+					System.out.println("Producer produced and set index " + count + " to FULL");
+					count = count + 1;
+					bufferArray.notify();											//notifies the consumer thread that the producer has produced
+				} catch(Exception e) {
+					isRunning = false;
 					e.printStackTrace();
 				}
 			}
-			
 		}
 	}
 }
